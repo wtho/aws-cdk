@@ -46,34 +46,27 @@ describe('With bucket', () => {
     });
   });
 
-  test('creates an OriginAccessIdentity and grants read permissions on the bucket', () => {
+  test('can customize OriginAccessIdentity property ', () => {
     const bucket = new s3.Bucket(stack, 'Bucket');
 
-    const origin = new S3Origin(bucket);
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(stack, 'OriginAccessIdentity', {
+      comment: 'Identity for bucket provided by test',
+    });
+
+    const origin = new S3Origin(bucket, { originAccessIdentity });
     new cloudfront.Distribution(stack, 'Dist', { defaultBehavior: { origin } });
 
     expect(stack).toHaveResourceLike('AWS::CloudFront::CloudFrontOriginAccessIdentity', {
       CloudFrontOriginAccessIdentityConfig: {
-        Comment: 'Identity for StackDistOrigin15754CE84',
-      },
-    });
-    expect(stack).toHaveResourceLike('AWS::S3::BucketPolicy', {
-      PolicyDocument: {
-        Statement: [{
-          Principal: {
-            CanonicalUser: { 'Fn::GetAtt': ['DistOrigin1S3Origin87D64058', 'S3CanonicalUserId'] },
-          },
-        }],
+        Comment: 'Identity for bucket provided by test',
       },
     });
   });
 
-  test('can customize OriginAccessIdentity property ', () => {
+  test('creates an OriginAccessIdentity and grants read permissions on the bucket', () => {
     const bucket = new s3.Bucket(stack, 'Bucket');
 
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OIA');
-
-    const origin = new S3Origin(bucket, { originAccessIdentity });
+    const origin = new S3Origin(bucket);
     new cloudfront.Distribution(stack, 'Dist', { defaultBehavior: { origin } });
 
     expect(stack).toHaveResourceLike('AWS::CloudFront::CloudFrontOriginAccessIdentity', {

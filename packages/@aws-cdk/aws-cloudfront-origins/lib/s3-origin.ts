@@ -56,12 +56,12 @@ export class S3Origin implements cloudfront.IOrigin {
  * Contains additional logic around bucket permissions and origin access identities.
  */
 class S3BucketOrigin extends cloudfront.OriginBase {
-  private originAccessIdentity!: cloudfront.OriginAccessIdentity;
+  private originAccessIdentity!: cloudfront.OriginAccessIdentity | cloudfront.IOriginAccessIdentity;
 
   constructor(private readonly bucket: s3.IBucket, { originAccessIdentity, ...props }: S3OriginProps) {
     super(bucket.bucketRegionalDomainName, props);
     if (originAccessIdentity) {
-        this.originAccessIdentity = originAccessIdentity;
+      this.originAccessIdentity = originAccessIdentity;
     }
   }
 
