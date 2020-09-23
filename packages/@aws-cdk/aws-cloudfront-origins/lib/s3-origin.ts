@@ -16,6 +16,12 @@ export interface S3OriginProps {
    * @default '/'
    */
   readonly originPath?: string;
+  /**
+   * An optional Origin Access Identity of the origin identity cloudfront will use when calling your s3 bucket.
+   *
+   * @default No Origin Access Identity which requires the S3 bucket to be public accessible
+   */
+  readonly originAccessIdentity?: cloudfront.IOriginAccessIdentity;
 }
 
 /**
@@ -52,8 +58,11 @@ export class S3Origin implements cloudfront.IOrigin {
 class S3BucketOrigin extends cloudfront.OriginBase {
   private originAccessIdentity!: cloudfront.OriginAccessIdentity;
 
-  constructor(private readonly bucket: s3.IBucket, props: S3OriginProps) {
+  constructor(private readonly bucket: s3.IBucket, { originAccessIdentity, ...props }: S3OriginProps) {
     super(bucket.bucketRegionalDomainName, props);
+    if (originAccessIdentity) {
+        this.originAccessIdentity = originAccessIdentity;
+    }
   }
 
   public bind(scope: cdk.Construct, options: cloudfront.OriginBindOptions): cloudfront.OriginBindConfig {

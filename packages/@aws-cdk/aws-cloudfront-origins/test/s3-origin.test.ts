@@ -30,7 +30,7 @@ describe('With bucket', () => {
     });
   });
 
-  test('can customize properties', () => {
+  test('can customize originPath property', () => {
     const bucket = new s3.Bucket(stack, 'Bucket');
 
     const origin = new S3Origin(bucket, { originPath: '/assets' });
@@ -50,6 +50,30 @@ describe('With bucket', () => {
     const bucket = new s3.Bucket(stack, 'Bucket');
 
     const origin = new S3Origin(bucket);
+    new cloudfront.Distribution(stack, 'Dist', { defaultBehavior: { origin } });
+
+    expect(stack).toHaveResourceLike('AWS::CloudFront::CloudFrontOriginAccessIdentity', {
+      CloudFrontOriginAccessIdentityConfig: {
+        Comment: 'Identity for StackDistOrigin15754CE84',
+      },
+    });
+    expect(stack).toHaveResourceLike('AWS::S3::BucketPolicy', {
+      PolicyDocument: {
+        Statement: [{
+          Principal: {
+            CanonicalUser: { 'Fn::GetAtt': ['DistOrigin1S3Origin87D64058', 'S3CanonicalUserId'] },
+          },
+        }],
+      },
+    });
+  });
+
+  test('can customize OriginAccessIdentity property ', () => {
+    const bucket = new s3.Bucket(stack, 'Bucket');
+
+    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OIA');
+
+    const origin = new S3Origin(bucket, { originAccessIdentity });
     new cloudfront.Distribution(stack, 'Dist', { defaultBehavior: { origin } });
 
     expect(stack).toHaveResourceLike('AWS::CloudFront::CloudFrontOriginAccessIdentity', {
